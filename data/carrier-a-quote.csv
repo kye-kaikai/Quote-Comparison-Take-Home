@@ -1,0 +1,7 @@
+Quote_ID,Carrier_Name,Quote_Date,Policy_Start,Policy_End,Coverage_Type,Limit_Amount,Premium_Cost,Deductible
+QA-2024-001,Acme Insurance Co,2024-01-15,03/01/2024,03/01/2025,General Liability,"$1,000,000","$1,250.00","$1,000"
+QA-2024-001,Acme Insurance Co,2024-01-15,03/01/2024,03/01/2025,Professional Liability,"$2,000,000","$2,100.50","$2,500"
+QA-2024-001,Acme Insurance Co,2024-01-15,03/01/2024,03/01/2025,Property Insurance,"$500,000","$875.00","$500"
+QA-2024-001,Acme Insurance Co,2024-01-15,03/01/2024,03/01/2025,Workers Compensation,"$1,000,000","$1,450.00",""
+QA-2024-001,Acme Insurance Co,2024-01-15,03/01/2024,03/01/2025,Cyber Liability,"$1,000,000","$950.00","$5,000"
+

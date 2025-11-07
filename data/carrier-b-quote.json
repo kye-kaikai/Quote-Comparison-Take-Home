@@ -1,0 +1,72 @@
+{
+  "quoteId": "QB-2024-445",
+  "carrier": {
+    "id": "carrier-b",
+    "name": "BestRate Insurance Group"
+  },
+  "dates": {
+    "quoted": "2024-01-18T00:00:00Z",
+    "effectiveDate": "2024-03-01T00:00:00Z",
+    "expirationDate": "2025-03-01T00:00:00Z"
+  },
+  "coverages": [
+    {
+      "coverage": {
+        "type": "GL",
+        "description": "General Liability Coverage"
+      },
+      "limits": {
+        "perOccurrence": 1000000,
+        "aggregate": 2000000
+      },
+      "pricing": {
+        "premium": 1150.00,
+        "deductible": 1000
+      }
+    },
+    {
+      "coverage": {
+        "type": "PROP",
+        "description": "Property Coverage"
+      },
+      "limits": {
+        "perOccurrence": 500000,
+        "aggregate": 500000
+      },
+      "pricing": {
+        "premium": 825.00,
+        "deductible": 500
+      }
+    },
+    {
+      "coverage": {
+        "type": "WC",
+        "description": "Workers' Comp"
+      },
+      "limits": {
+        "perOccurrence": 1000000,
+        "aggregate": 1000000
+      },
+      "pricing": {
+        "premium": 1500.00,
+        "deductible": 0
+      }
+    },
+    {
+      "coverage": {
+        "type": "CYBER",
+        "description": "Cyber Liability Insurance"
+      },
+      "limits": {
+        "perOccurrence": 1000000,
+        "aggregate": 1000000
+      },
+      "pricing": {
+        "premium": 775.00,
+        "deductible": 5000
+      }
+    }
+  ],
+  "totalPremium": 4250.00
+}
+

@@ -1,0 +1,6 @@
+QuoteNumber,InsuranceCompany,DateQuoted,EffectiveDate,ExpirationDate,CoverageDescription,LimitValue,AnnualPremium,DeductibleAmount
+QC-789-2024,CostPlus Insurance Partners,01/20/2024,2024-03-01,2025-03-01,GenLiability,1000000.00,1575.00,1000.00
+QC-789-2024,CostPlus Insurance Partners,01/20/2024,2024-03-01,2025-03-01,ProfessionalLiab,2000000.00,2275.00,2500.00
+QC-789-2024,CostPlus Insurance Partners,01/20/2024,2024-03-01,2025-03-01,PropertyCoverage,500000.00,900.00,500.00
+QC-789-2024,CostPlus Insurance Partners,01/20/2024,2024-03-01,2025-03-01,CyberInsurance,1000000.00,1100.00,5000.00
+
