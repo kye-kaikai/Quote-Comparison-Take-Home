@@ -7,9 +7,6 @@
  * - Data normalization into common Quote schema
  */
 
-import * as fs from 'fs';
-import csv from 'csv-parser';
-import { parse } from 'csv-parse';
 import { FileHelper, ParserErrorMsgs, RecognizedCarriers, RecognizedCoverage, RecognizedQuoteFiles } from '../services';
 import { Coverage, Quote } from '../models/quote';
 
@@ -38,10 +35,10 @@ export async function parseQuote(options: ParseOptions): Promise<Quote> {
     try {
       const _ = JSON.parse(dataToParse);
     } catch (error) {
-      dataToParse = convertCSVRawData(dataToParse);
+      dataToParse = FileHelper.convertCSVRawData(dataToParse);
     }
   } else {
-    dataToParse = await readDataFromFile(carrier, filePath)
+    dataToParse = await FileHelper.readDataFromFile(carrier, filePath)
   }
 
   // TODO: Implement parser routing logic
@@ -51,78 +48,7 @@ export async function parseQuote(options: ParseOptions): Promise<Quote> {
   return await routeCarrierParsing(carrier, dataToParse);
 }
 
-async function readDataFromFile(carrier: string, filePath: string | undefined): Promise<string> {
-  const mappedFilePath: string = RecognizedCarriers.carrierToFilePaths.get(carrier)!;
-  const trueFilePath: string = (filePath ?? mappedFilePath).toLowerCase();
-  const fileExt: string = FileHelper.getFileExt(trueFilePath);
-
-  if (!fileExt) {
-    throw new Error(ParserErrorMsgs.MISSING_FILE_EXT);
-  } else if (!RecognizedQuoteFiles.fileExts.has(fileExt)) {
-    throw new Error(ParserErrorMsgs.INVALID_FILE_EXT);
-  }
-
-  if (!fs.existsSync(trueFilePath)) {
-    throw new Error(ParserErrorMsgs.MISSING_QUOTE_FILE);
-  }
-
-  if (fileExt === RecognizedQuoteFiles.CSV) {
-    return await csvReader(trueFilePath);
-  } else {
-    return await jsonReader(trueFilePath);
-  }
-}
-
 // Helper functions you might need:
-async function csvReader(path: string): Promise<string> {
-  let allData: any[] = [];
-
-  return new Promise((res, _) => {
-    fs.createReadStream(path)
-      .pipe(csv())
-      .on('data', (data: any) => {
-        if (Object.keys(data).length > 0) {
-          allData.push(data)
-        }
-      })
-      .on('end', () => {
-        res(JSON.stringify(allData));
-      });
-  });
-}
-
-async function jsonReader(path: string): Promise<string> {
-  return new Promise((res, _) => {
-    fs.readFile(path, 'utf8', (err, data) => {
-      res(data);
-    })
-  });
-}
-
-function convertCSVRawData(data: string): string {
-  return JSON.stringify(parse(data, {
-    columns: true,
-    skip_empty_lines: true
-  }));
-}
-
-// - normalizeCoverageType(type: string): string
-function normalizeCoverageType(type: string): string {
-  return RecognizedCoverage[`${type}` as keyof typeof RecognizedCoverage] ?? type;
-}
-
-// - parseCurrency(value: string): number
-function parseCurrency(value: string): number {
-  const parsedVal: string = value.replace(/[^0-9\.]/g, '');
-  return Number(parsedVal);
-}
-
-// - parseDate(value: string): Date
-function parseDate(value: string): Date {
-  const dateTimeParts: string[] = value.split('T');
-  return new Date(dateTimeParts[0]);
-}
-
 async function routeCarrierParsing(carrier: string, dataToParse: string): Promise<Quote> {
   let quote: Quote;
   switch (carrier) {
@@ -177,7 +103,7 @@ async function parseCarrierB(data: string): Promise<Quote> {
     totalPremium: carrierData.totalPremium,
     coverages: carrierData.coverages.map((x: any) => ({
       type: normalizeCoverageType(x.coverage.type),
-      limit: x.limits.aggregate,
+      limit: x.limits.perOccurrence,
       premium: x.pricing.premium,
       deductible: x.pricing.deductible
     }))
@@ -207,4 +133,21 @@ async function parseCarrierC(data: string): Promise<Quote> {
     totalPremium: coverages.reduce((acc, curr) => acc += curr.premium, 0),
     coverages: coverages
   };
+}
+
+// - normalizeCoverageType(type: string): string
+function normalizeCoverageType(type: string): string {
+  return RecognizedCoverage[`${type}` as keyof typeof RecognizedCoverage] ?? type;
+}
+
+// - parseCurrency(value: string): number
+function parseCurrency(value: string): number {
+  const parsedVal: string = value.replace(/[^0-9\.]/g, '');
+  return Number(parsedVal);
+}
+
+// - parseDate(value: string): Date
+function parseDate(value: string): Date {
+  const dateTimeParts: string[] = value.split('T');
+  return new Date(dateTimeParts[0]);
 }
