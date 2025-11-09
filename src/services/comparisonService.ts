@@ -77,7 +77,7 @@ export function compareQuotes(quotes: Quote[]): ComparisonResult {
 
 // Helper functions you might need:
 // - buildCoverageMatrix(quotes: Quote[]): CoverageMatrix
-function buildCoverageMatrix(quotes: Quote[]): CoverageMatrix {
+export function buildCoverageMatrix(quotes: Quote[]): CoverageMatrix {
   const matrix: CoverageMatrix = {};
 
   quotes.forEach(quote => {
@@ -104,7 +104,7 @@ function buildCoverageMatrix(quotes: Quote[]): CoverageMatrix {
 }
 
 // - findCoverageGaps(quotes: Quote[]): ComparisonInsights['coverageGaps']
-function findCoverageGaps(quotes: Quote[]): ComparisonInsights['coverageGaps'] {
+export function findCoverageGaps(quotes: Quote[]): ComparisonInsights['coverageGaps'] {
   const quoteWithMostCoverages = quotes.sort((a, b) => -1 * (a.coverages.length - b.coverages.length))[0];
   const allCoverages: Set<string> = new Set(quoteWithMostCoverages.coverages.map(x => x.type));
   let coverageGaps: ComparisonInsights['coverageGaps'] = [];
@@ -121,7 +121,7 @@ function findCoverageGaps(quotes: Quote[]): ComparisonInsights['coverageGaps'] {
   return coverageGaps;
 }
 
-function getLowestTotalPremium(quotes: Quote[]): ComparisonInsights['lowestTotalPremium'] {
+export function getLowestTotalPremium(quotes: Quote[]): ComparisonInsights['lowestTotalPremium'] {
   const lowestTotalPremiumQuote = quotes.sort((a, b) => a.totalPremium - b.totalPremium)[0];
   return {
     carrierId: lowestTotalPremiumQuote.carrierId,
@@ -129,7 +129,7 @@ function getLowestTotalPremium(quotes: Quote[]): ComparisonInsights['lowestTotal
   };
 }
 
-function identifyVariances(quotes: Quote[]): ComparisonInsights['significantDifferences'] {
+export function identifyVariances(quotes: Quote[]): ComparisonInsights['significantDifferences'] {
   let variances: ComparisonInsights['significantDifferences'] = [];
 
   for (let i = 0; i < quotes.length; i++) {
@@ -182,5 +182,5 @@ function calculateVariance(premiums: number[]): number {
   const prem2 = premiums[1];
 
   let variance = prem1 > prem2 ? prem1 / prem2 - 1 : prem2 / prem1 - 1;
-  return variance * 100;
+  return Number((variance * 100).toFixed(2));
 }

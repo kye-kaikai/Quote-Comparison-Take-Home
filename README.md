@@ -334,3 +334,41 @@ Please submit:
 
 Good luck! We're excited to see your approach to solving real insurance brokerage challenges.
 
+### My Documentation
+1. Assumptions
+  * Assumed that CSV files always only contain 1 unique quote (based on the quote ID)
+    - Drawback to this assumption is that if the extraction procedure took an additional and different quote, then the comparison engine would consider its premium and limit values when analyzing and gathering insights; thereby, causing inaccurate data from being reported.
+  * Assumed that the only two valid file types are CSV and JSON files
+    - Drawback of this assumption would be that if Excel (xls, excel) files were valid, then the API endpoint would fail; however, I do have a check on the file extension and throw an error with a corresponding message indicating that only CSVs and JSON are allowed.
+  * Assumed that if a file path is provided, then it is the true (and valid) file path for the provided carrier
+    - Drawback of this assumption is that this can possibly cause the incorrect carrier quote file from being read and leading to an unexpected behavior with compare API endpoint.
+2. Tradeoffs
+  * Manual Mapping of Coverage Types vs Fuzzy Matching Coverage Types
+    - The benefit of manually mapping coverage types is ensuring accuracy within the comparison report, as there would be a direct one-for-one as to how to identify gaps and to calculate variances; however, the downside of this is that it requires more work on the developer and/or business to make the correct determinations as to how the coverage types should be matched. When this problem is scaled to a larger number of carriers, this would not be an appropriate approach. This is more beneficial for smaller scaled data, especially during MVPs, experiements, and/or POCs. Fuzzy matching would be more appropriate but with the downside of losing out on accuracy. Therefore, this makes the fuzzy matching threshold very important.
+  * Transformation of Carrier Quote Properties to Normalized Quote Properties vs Manually Mapping Carrier Quote Properties to Normalized Quote Properties
+    - I wanted to perform the transformation of carrier quote data early on by mapping the property names of the provided quote data to the property names of the Quote interface. The idea, or purpose, behind this was to account for additional carriers being added to the sample data, where they may share identical properties to the sample data carriers. For instance, if "carrier-d" was added into the sample data and it also contained "Premium_Cost" ("carrier-a") as its premium field, then it would prevent a future developer from having to manually map that property name again. However, the exercise of doing this was very similar to what my implementation ended up at, with me manually mapping the property names directly within the parsing functions. The benefit of the former approach is that it's a one-time activity to mapping a unique property; however, a major downside would be if the carrier quote properties change causing maintenance to be a big hassle. The latter approach also faces this same issue, so a possible alternative approach would be to perform a semantic-based mapping where a model would have to understand that "Policy_Start" = "effectiveDate" => "EffectiveDate"; however, this makes the transformation logic much more complex.
+  * Variance checks all possible pairs naively
+    - Although the variance calculations will capture all of the significant differences in coverage, it's written naively to check for all possible combination pairs of coverages. Due to this brute force approach, when the data scales up, the comparison engine won't perform as well due to the slowdown it would see if variance computations. In order to optimize for this, a sliding-window sort of approach may help with the performance, as it should theoretically capture all possible pairs.
+3. What if I had more time?
+  * I ended up using more time than what was suggested. The time log will indicate where and why I spent the time the way I did for each section; however, to summarize, the general theme was that I became too focused on the abstraction (going against the development tips). Consequentially, this led to more debugging on my end.
+4. Time Log
+  * Parsing & Normalization: ~3-4hrs
+    - Planning time for abstraction and generalization, and experimenting with different approaches mentioned below
+    - Attempt to manually map property names to the normalized Quote property names (as indicated in *Tradeoffs (2nd bullet point)*)
+    - Switching between CSV reader and manually converting raw CSV data (with a standard transformation to an array of objects)
+      - Didn't properly account for quoted data in CSV files, which led to some research as to how it could be possible with REGEX
+      - Eventually arrived at the former
+      - The goal for this problem that took a significant amount of my time was determining how I can pass a string of data in a standard way to each parsing function (parseCarrierA, parseCarrierB, parseCarrierC)
+    - Debugging issues with CSV reader
+    - Debugging errors with parsing raw CSV data
+    - Debugging errors with local timezone in date (maybe should've considered using something like luxon library)
+    - Issues with properly typing object-defined maps with string literals and properly accessing their property values
+    - Manual testing to see what results were coming back from the parsing and normalization for each file
+  * Comparison Logic: ~1hr 20min
+    - Incorrect variance calculations
+      - Initial attempt involved just trying to check the variance of the quote with the least coverages, thinking it would be beneficial for performance, but it led to the miss in checking all combination pairs of carrier quotes' variances 
+      - Debugging issues for variance calculations
+  * API Endpoint: ~1hr
+    - Testing of comparison logic based on the sample data and comparing it with the sample response within the repository
+  * Test Cases: ~40min
+    - Jest testing with Express

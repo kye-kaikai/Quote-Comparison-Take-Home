@@ -7,7 +7,7 @@
  * - Data normalization into common Quote schema
  */
 
-import { FileHelper, ParserErrorMsgs, RecognizedCarriers, RecognizedCoverage, RecognizedQuoteFiles } from '../services';
+import { FileHelper, ParserErrorMsgs, RecognizedCarriers, RecognizedCoverage } from '../services';
 import { Coverage, Quote } from '../models/quote';
 
 export interface ParseOptions {
@@ -35,7 +35,7 @@ export async function parseQuote(options: ParseOptions): Promise<Quote> {
     try {
       const _ = JSON.parse(dataToParse);
     } catch (error) {
-      dataToParse = FileHelper.convertCSVRawData(dataToParse);
+      dataToParse = await FileHelper.convertCSVRawData(dataToParse);
     }
   } else {
     dataToParse = await FileHelper.readDataFromFile(carrier, filePath)
@@ -73,9 +73,9 @@ async function parseCarrierA(data: string): Promise<Quote> {
   carrierData.forEach((row: any) => {
     coverages.push({
       type: normalizeCoverageType(row.Coverage_Type),
-      limit: parseCurrency(row.Limit_Amount),
-      premium: parseCurrency(row.Premium_Cost),
-      deductible: parseCurrency(row.Deductible)
+      limit: normalizeCurrency(parseCurrency(row.Limit_Amount)),
+      premium: normalizeCurrency(parseCurrency(row.Premium_Cost)),
+      deductible: normalizeCurrency(parseCurrency(row.Deductible))
     });
   });
 
@@ -85,7 +85,7 @@ async function parseCarrierA(data: string): Promise<Quote> {
     quoteDate: parseDate(carrierData[0].Quote_Date),
     effectiveDate: parseDate(carrierData[0].Policy_Start),
     expirationDate: parseDate(carrierData[0].Policy_End),
-    totalPremium: coverages.reduce((acc, curr) => acc += curr.premium, 0),
+    totalPremium: normalizeCurrency(coverages.reduce((acc, curr) => acc += curr.premium, 0)),
     coverages: coverages
   };
 }
@@ -100,12 +100,12 @@ async function parseCarrierB(data: string): Promise<Quote> {
     quoteDate: parseDate(carrierData.dates.quoted),
     effectiveDate: parseDate(carrierData.dates.effectiveDate),
     expirationDate: parseDate(carrierData.dates.expirationDate),
-    totalPremium: carrierData.totalPremium,
+    totalPremium: normalizeCurrency(carrierData.totalPremium),
     coverages: carrierData.coverages.map((x: any) => ({
       type: normalizeCoverageType(x.coverage.type),
-      limit: x.limits.perOccurrence,
-      premium: x.pricing.premium,
-      deductible: x.pricing.deductible
+      limit: normalizeCurrency(x.limits.perOccurrence),
+      premium: normalizeCurrency(x.pricing.premium),
+      deductible: normalizeCurrency(x.pricing.deductible)
     }))
   };
 }
@@ -118,9 +118,9 @@ async function parseCarrierC(data: string): Promise<Quote> {
   carrierData.forEach((row: any) => {
     coverages.push({
       type: normalizeCoverageType(row.CoverageDescription),
-      limit: Number(row.LimitValue),
-      premium: Number(row.AnnualPremium),
-      deductible: Number(row.DeductibleAmount)
+      limit: normalizeCurrency(Number(row.LimitValue)),
+      premium: normalizeCurrency(Number(row.AnnualPremium)),
+      deductible: normalizeCurrency(Number(row.DeductibleAmount))
     });
   });
 
@@ -130,7 +130,7 @@ async function parseCarrierC(data: string): Promise<Quote> {
     quoteDate: parseDate(carrierData[0].DateQuoted),
     effectiveDate: parseDate(carrierData[0].EffectiveDate),
     expirationDate: parseDate(carrierData[0].ExpirationDate),
-    totalPremium: coverages.reduce((acc, curr) => acc += curr.premium, 0),
+    totalPremium: normalizeCurrency(coverages.reduce((acc, curr) => acc += curr.premium, 0)),
     coverages: coverages
   };
 }
@@ -146,8 +146,14 @@ function parseCurrency(value: string): number {
   return Number(parsedVal);
 }
 
+function normalizeCurrency(value: number): number {
+  return Number(value.toFixed(2));
+}
+
 // - parseDate(value: string): Date
 function parseDate(value: string): Date {
   const dateTimeParts: string[] = value.split('T');
-  return new Date(dateTimeParts[0]);
+  const date = new Date(dateTimeParts[0]);
+  const formattedDate: Date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  return formattedDate;
 }

@@ -58,10 +58,19 @@ export class FileHelper {
         });
     }
 
-    static convertCSVRawData(data: string): string {
-        return JSON.stringify(parse(data, {
-            columns: true,
-            skip_empty_lines: true
-        }));
+    static async convertCSVRawData(data: string): Promise<string> {
+        const results: any = [];
+        return new Promise((res, _) => {
+            const parser = parse(data, { columns: true, skip_empty_lines: true });
+            parser.on('readable', () => {
+                let record;
+                while ((record = parser.read()) !== null) {
+                    results.push(record);
+                }
+            })
+
+            parser.end();
+            res(JSON.stringify(results));
+        })
     }
 }

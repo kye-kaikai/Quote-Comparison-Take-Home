@@ -34,6 +34,7 @@ router.post('/compare', async (req: Request, res: Response) => {
       error: 'Bad Request Exception',
       message: APIErrMsgs.REQ_MISSING_QUOTES
     });
+    return;
   }
 
   const quoteCarriers = reqQuotes.map((x: ParseOptions) => x.carrier);
@@ -42,6 +43,7 @@ router.post('/compare', async (req: Request, res: Response) => {
       error: 'Bad Request Exception',
       message: APIErrMsgs.REQ_HAS_INVALID_QUOTES
     });
+    return;
   }
 
   try {
@@ -60,11 +62,13 @@ router.post('/compare', async (req: Request, res: Response) => {
 
     // TODO: Return comparison result
     res.status(200).json(comparison);
+    return;
   } catch (error) {
     res.status(500).json({
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error'
     });
+    return;
   }
 });
 
