@@ -371,4 +371,5 @@ Good luck! We're excited to see your approach to solving real insurance brokerag
   * API Endpoint: ~1hr
     - Testing of comparison logic based on the sample data and comparing it with the sample response within the repository
   * Test Cases: ~40min-1hr
+    - Timezone testing issues
     - Jest testing with Express
