@@ -37,6 +37,13 @@ export interface ComparisonResult {
   insights: ComparisonInsights;
 }
 
+export interface CoverageToCarrierPremium {
+  [type: string]: {
+    premium: number;
+    carrierId: string;
+  }
+}
+
 /**
  * Compare multiple insurance quotes and generate insights
  * 
@@ -75,8 +82,8 @@ function buildCoverageMatrix(quotes: Quote[]): CoverageMatrix {
 
   quotes.forEach(quote => {
     quote.coverages.forEach(cov => {
-      if (Object.hasOwnProperty(cov.type)) {
-        matrix[`${cov.type}`][quote.carrierId] = {
+      if (matrix.hasOwnProperty(cov.type)) {
+        matrix[`${cov.type}`][`${quote.carrierId}`] = {
           limit: cov.limit,
           premium: cov.premium,
           deductible: cov.deductible
@@ -123,23 +130,46 @@ function getLowestTotalPremium(quotes: Quote[]): ComparisonInsights['lowestTotal
 }
 
 function identifyVariances(quotes: Quote[]): ComparisonInsights['significantDifferences'] {
-  const quoteWithLeastCoverages = quotes.sort((a, b) => a.coverages.length - b.coverages.length)[0];
-  const minCoverages = convertCoverageTypeToPremMap(quoteWithLeastCoverages.coverages);
-  const variances: ComparisonInsights['significantDifferences'] = [];
+  let variances: ComparisonInsights['significantDifferences'] = [];
 
-  for (let i = 1; i < quotes.length; i++) {
-    const currQuoteCoverages = convertCoverageTypeToPremMap(quotes[i].coverages);
-    for (let [key, value] of minCoverages.entries()) {
-      if (currQuoteCoverages.has(key)) {
-        const variance = calculateVariance([value, currQuoteCoverages.get(key)!]);
-        if (variance > VARIANCE_THRESHOLD) {
-          variances.push({
-            coverageType: key,
-            carriers: [quoteWithLeastCoverages.carrierId, quotes[i].carrierId],
-            variance: variance
-          })
-        }
-      }
+  for (let i = 0; i < quotes.length; i++) {
+    const quote1 = quotes[i];
+    const quote1TypeToPremMap = convertCoverageTypeToPremMap(quote1.coverages, quote1.carrierId);
+    for (let j = i + 1; j < quotes.length; j++) {
+      const quote2 = quotes[j];
+      const quote2TypeToPremMap = convertCoverageTypeToPremMap(quote2.coverages, quote2.carrierId);
+      variances = variances.concat(comparePremiums(quote1TypeToPremMap, quote2TypeToPremMap));
+    }
+  }
+
+  return variances;
+}
+
+function convertCoverageTypeToPremMap(coverages: Coverage[], carrierId: string): CoverageToCarrierPremium {
+  return coverages.reduce((acc, curr) => {
+    acc[`${curr.type}`] = {
+      premium: curr.premium,
+      carrierId: carrierId
+    };
+    return acc;
+  }, {} as CoverageToCarrierPremium);
+}
+
+function comparePremiums(typeToPremMap1: CoverageToCarrierPremium, typeToPremMap2: CoverageToCarrierPremium): ComparisonInsights['significantDifferences'] {
+  const quote1Types = new Set(Object.keys(typeToPremMap1));
+  const quote2Types = new Set(Object.keys(typeToPremMap2));
+  const intersectingTypes = quote1Types.intersection(quote2Types);
+
+  const variances = [];
+
+  for (let type of intersectingTypes) {
+    const variance = calculateVariance([typeToPremMap1[`${type}`].premium, typeToPremMap2[`${type}`].premium]);
+    if (variance > VARIANCE_THRESHOLD) {
+      variances.push({
+        coverageType: type,
+        carriers: [typeToPremMap1[`${type}`].carrierId, typeToPremMap2[`${type}`].carrierId],
+        variance: variance
+      })
     }
   }
 
@@ -152,12 +182,5 @@ function calculateVariance(premiums: number[]): number {
   const prem2 = premiums[1];
 
   let variance = prem1 > prem2 ? prem1 / prem2 - 1 : prem2 / prem1 - 1;
-  return variance;
-}
-
-function convertCoverageTypeToPremMap(coverages: Coverage[]): Map<string, number> {
-  return coverages.reduce((acc, curr) => {
-    acc.set(curr.type, { premium: curr.premium });
-    return acc;
-  }, new Map());
+  return variance * 100;
 }

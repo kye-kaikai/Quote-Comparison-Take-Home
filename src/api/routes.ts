@@ -3,6 +3,9 @@
  */
 
 import { Router, Request, Response } from 'express';
+import { ParseOptions, parseQuote } from '../parsers';
+import { APIErrMsgs, compareQuotes } from '../services';
+import { Quote } from '../models/quote';
 
 const router = Router();
 
@@ -23,16 +26,42 @@ const router = Router();
  * - summarize=true : Generate AI summary (bonus feature)
  */
 router.post('/compare', async (req: Request, res: Response) => {
+  // TODO: Validate request body
+  const body = req.body;
+  const reqQuotes = body.quotes;
+  if (!body || !reqQuotes || !reqQuotes.length) {
+    res.status(400).json({
+      error: 'Bad Request Exception',
+      message: APIErrMsgs.REQ_MISSING_QUOTES
+    });
+  }
+
+  const quoteCarriers = reqQuotes.map((x: ParseOptions) => x.carrier);
+  if (quoteCarriers.some((x: string | undefined | null) => !x)) {
+    res.status(400).json({
+      error: 'Bad Request Exception',
+      message: APIErrMsgs.REQ_HAS_INVALID_QUOTES
+    });
+  }
+
   try {
-    // TODO: Validate request body
     // TODO: Parse each quote using parseQuote()
+    const quoteTasks: Promise<Quote>[] = [];
+    reqQuotes.forEach((quote: ParseOptions) => {
+      quoteTasks.push(parseQuote(quote));
+    })
+
+    const quotes = await Promise.all(quoteTasks);
+
     // TODO: Compare quotes using compareQuotes()
+    const comparison = compareQuotes(quotes);
+
     // TODO: Optionally generate AI summary if ?summarize=true
+
     // TODO: Return comparison result
-    
-    res.status(501).json({ error: 'Not implemented' });
+    res.status(200).json(comparison);
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error'
     });

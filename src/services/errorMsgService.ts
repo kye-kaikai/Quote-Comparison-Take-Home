@@ -9,3 +9,8 @@ export class ParserErrorMsgs {
         `The carrier's file extension is invalid. Please provide a recognized file extension: ${[...RecognizedQuoteFiles.fileExts].join(', ')}`;
     static readonly MISSING_QUOTE_FILE: string = "The carrier's quote file is missing";
 }
+
+export class APIErrMsgs {
+    static readonly REQ_MISSING_QUOTES: string = 'The request body is missing quotes to compare';
+    static readonly REQ_HAS_INVALID_QUOTES: string = 'The request body contains a quote without a carrier ID';
+}

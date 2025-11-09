@@ -1,1 +1,1 @@
-export const VARIANCE_THRESHOLD: number = .2;
+export const VARIANCE_THRESHOLD: number = 20;
