@@ -370,5 +370,5 @@ Good luck! We're excited to see your approach to solving real insurance brokerag
       - Debugging issues for variance calculations
   * API Endpoint: ~1hr
     - Testing of comparison logic based on the sample data and comparing it with the sample response within the repository
-  * Test Cases: ~40min
+  * Test Cases: ~40min-1hr
     - Jest testing with Express
