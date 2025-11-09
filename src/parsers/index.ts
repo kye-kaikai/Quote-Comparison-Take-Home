@@ -69,7 +69,7 @@ async function readDataFromFile(carrier: string, filePath: string | undefined): 
   if (fileExt === RecognizedQuoteFiles.CSV) {
     return await csvReader(trueFilePath);
   } else {
-    return jsonReader(trueFilePath);
+    return await jsonReader(trueFilePath);
   }
 }
 
@@ -91,8 +91,12 @@ async function csvReader(path: string): Promise<string> {
   });
 }
 
-function jsonReader(path: string): string {
-  return JSON.stringify(require(path));
+async function jsonReader(path: string): Promise<string> {
+  return new Promise((res, _) => {
+    fs.readFile(path, 'utf8', (err, data) => {
+      res(data);
+    })
+  });
 }
 
 function convertCSVRawData(data: string): string {
