@@ -350,7 +350,7 @@ Good luck! We're excited to see your approach to solving real insurance brokerag
   * Variance checks all possible pairs naively
     - Although the variance calculations will capture all of the significant differences in coverage, it's written naively to check for all possible combination pairs of coverages. Due to this brute force approach, when the data scales up, the comparison engine won't perform as well due to the slowdown it would see if variance computations. In order to optimize for this, a sliding-window sort of approach may help with the performance, as it should theoretically capture all possible pairs.
 3. What if I had more time?
-  * I ended up using more time than what was suggested. The time log will indicate where and why I spent the time the way I did for each section; however, to summarize, the general theme was that I became too focused on the abstraction (going against the development tips). Consequentially, this led to more debugging on my end.
+  * I ended up using more time than what was suggested. The time logs will indicate where and why I spent the time the way I did for each section; however, to summarize, the general theme was that I became too focused on the abstraction (going against the development tips). Consequentially, this led to more debugging on my end. Nevertheless, I will still speak hypothetically as to what I would've done with more time if I was hard-cut after 3 hours. After 3 hours, I would've been wrapping up the parsing and normalization step. With more time, I think I would've started out a little differently. I began writing on some paper about the assessment's goals, the different approaches I wanted to take for certain blocks of code, and what were the benefits and drawbacks to them; however, I should've been more concrete and decisive. Since I questioned how I wanted to develop, it made it difficult to consider test cases, especially if I modified return types and project structure. With a more well-established plan, the transition to the comparison logic would've been seamless and quicker. I suspect that I would've still had some troubles determining the variance calculations and a couple of notational issues, but the timing would've been more reasonable. After completing the comparison logic and its tests, I would've moved onto the API, establishing the basic input validations. Nothing would've really changed for this section compared to what I actually did besides possibly considering security and performance with throttling and rate limiting. In addition, testing would've been more heavily emphasized for the comparison during that phase rather than during the API creation. With the remaining time, the I would've established the necessary tests for the API endpoint.
 4. Time Log
   * Parsing & Normalization: ~3-4hrs
     - Planning time for abstraction and generalization, and experimenting with different approaches mentioned below
@@ -370,6 +370,6 @@ Good luck! We're excited to see your approach to solving real insurance brokerag
       - Debugging issues for variance calculations
   * API Endpoint: ~1hr
     - Testing of comparison logic based on the sample data and comparing it with the sample response within the repository
-  * Test Cases: ~40min-1hr
+  * Test Cases: ~1hr
     - Timezone testing issues
     - Jest testing with Express
